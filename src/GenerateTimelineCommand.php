@@ -84,7 +84,14 @@ class GenerateTimelineCommand extends Command
 
         $events = $factory->getEvents($period);
 
-        $crons = [];
+        $crons = [
+            [
+                'id' => 'period',
+                'start' => $period->getBegin()->format('Y-m-d H:i:s'),
+                'end' => $period->getEnd()->format('Y-m-d H:i:s'),
+                'type' => 'background'
+            ],
+        ];
         foreach ($events->all() as $event) {
             $crons[] = [
                 'id' => $event->getUid(),
