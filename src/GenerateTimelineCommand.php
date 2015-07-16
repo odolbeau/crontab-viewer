@@ -51,13 +51,13 @@ class GenerateTimelineCommand extends Command
         $factory = new Calendar;
         switch ($interval) {
             case 'd':
-                $period = $factory->getDay($now);
+                $period = $factory->getDay($now->sub(new \DateInterval('PT12H')));
                 break;
             case 'w':
-                $period = $factory->getWeek($now);
+                $period = $factory->getWeek($now->sub(new \DateInterval('P3DT12H')));
                 break;
             case 'm':
-                $period = $factory->getMonth($now);
+                $period = $factory->getMonth($now->sub(new \DateInterval('P15D')));
                 break;
             default:
                 throw new \InvalidArgumentException("Unknown interval \"$interval\"");
