@@ -1,0 +1,21 @@
+{
+    "name": "odolbeau/crontab-viewer",
+    "description": "A command to generate an HTML file to visualize your crontab",
+    "require": {
+        "symfony/console": "^2.7",
+        "symfony/finder": "^2.7",
+        "twig/twig": "^1.18",
+        "yohang/calendr": "^1.0"
+    },
+    "authors": [
+        {
+            "name": "Olivier Dolbeau",
+            "email": "contact@odolbeau.fr"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bab\\CrontabViewer\\": "src"
+        }
+    }
+}

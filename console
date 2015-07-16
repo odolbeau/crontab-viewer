@@ -1,0 +1,16 @@
+#!/usr/bin/env php
+<?php
+
+(@include_once __DIR__.'/vendor/autoload.php') || @include_once __DIR__.'/../../autoload.php';
+
+use Symfony\Component\Console\Application;
+use Bab\CrontabViewer\GenerateTimelineCommand;
+
+$loader = new Twig_Loader_Filesystem('templates');
+$twig = new Twig_Environment($loader, array(
+    'cache' => 'cache/twig',
+));
+
+$application = new Application();
+$application->add(new GenerateTimelineCommand($twig));
+$application->run();
