@@ -36,6 +36,7 @@ class GenerateTimelineCommand extends Command
             ->setDescription('Generate an html file to visualize the crontab on a timeline.')
             ->addOption('directory', 'd', InputOption::VALUE_REQUIRED, 'Which folder contains crontabs definitions?', '/var/spool/cron/crontabs/')
             ->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'Which period should be generated? [d|w|m]', 'd')
+            ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Which file should be writted?', '/tmp/timeline.html')
             ;
     }
 
@@ -94,7 +95,7 @@ class GenerateTimelineCommand extends Command
         }
 
         $now = new \DateTime();
-        $filename = 'timelines/'.$now->format('Y-m-d-H-i-s').'.html';
+        $filename = $input->getOption('output');
         file_put_contents($filename, $this->twig->render('timeline.twig.html', ['crons' => $crons]));
 
         $output->writeln("<info>Timeline generated: <comment>$filename</comment>.</info>");
