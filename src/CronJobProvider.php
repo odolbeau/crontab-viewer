@@ -51,7 +51,6 @@ class CronJobProvider implements ProviderInterface
      */
     public function getEvents(\DateTime $begin, \DateTime $end, array $options = array())
     {
-        echo $this->command;
         // Edge cases
         if ($this->isEveryMonths() && $this->isEveryDays() && $this->isEveryHours()) {
             return [
