@@ -37,6 +37,7 @@ class GenerateTimelineCommand extends Command
             ->addOption('directory', 'd', InputOption::VALUE_REQUIRED, 'Which folder contains crontabs definitions?', '/var/spool/cron/crontabs/')
             ->addOption('interval', 'i', InputOption::VALUE_REQUIRED, 'Which period should be generated? [d|w|m]', 'd')
             ->addOption('output', 'o', InputOption::VALUE_REQUIRED, 'Which file should be writted?', '/tmp/timeline.html')
+            ->addOption('ignore-recurrent-crons', 'r', InputOption::VALUE_REQUIRED, 'Which cron should be ignored?', null)
             ;
     }
 
@@ -47,6 +48,9 @@ class GenerateTimelineCommand extends Command
     {
         $now = new \DateTime();
         $interval = $input->getOption('interval');
+        if (null !== $ignoreInterval = $input->getOption('ignore-recurrent-crons')) {
+            $ignoreInterval = new \DateInterval($ignoreInterval);
+        }
 
         $factory = new Calendar;
         switch ($interval) {
@@ -73,7 +77,7 @@ class GenerateTimelineCommand extends Command
                     continue;
                 }
 
-                $factory->getEventManager()->addProvider(sha1($file->getFilename() . $buffer), CronJobProvider::createFromCronTab($buffer));
+                $factory->getEventManager()->addProvider(sha1($file->getFilename() . $buffer), CronJobProvider::createFromCronTab($buffer, $ignoreInterval));
             }
 
             if (!feof($handle)) {

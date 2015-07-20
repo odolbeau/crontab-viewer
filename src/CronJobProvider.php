@@ -13,15 +13,17 @@ class CronJobProvider implements ProviderInterface
     protected $months;
     protected $weekdays;
     protected $command;
+    protected $ignoreInterval;
 
-    private function __construct($minutes, $hours, $days, $months, $weekdays, $command)
+    private function __construct($minutes, $hours, $days, $months, $weekdays, $command, \DateInterval $ignoreInterval = null)
     {
-        $this->minutes  = $this->getRelevantNumbers($minutes, 59);
-        $this->hours    = $this->getRelevantNumbers($hours, 23);
-        $this->days     = $this->getRelevantNumbers($days, 30);
-        $this->months   = $this->getRelevantNumbers($months, 11);
-        $this->weekdays = $this->getRelevantNumbers($weekdays, 6);
-        $this->command  = $command;
+        $this->minutes        = $this->getRelevantNumbers($minutes, 59);
+        $this->hours          = $this->getRelevantNumbers($hours, 23);
+        $this->days           = $this->getRelevantNumbers($days, 30);
+        $this->months         = $this->getRelevantNumbers($months, 11);
+        $this->weekdays       = $this->getRelevantNumbers($weekdays, 6);
+        $this->command        = $command;
+        $this->ignoreInterval = $ignoreInterval;
     }
 
     /**
@@ -31,7 +33,7 @@ class CronJobProvider implements ProviderInterface
      *
      * @return EventInterface[]
      */
-    public static function createFromCrontab($config)
+    public static function createFromCrontab($config, \DateInterval $ignoreInterval = null)
     {
         $parts = explode(' ', $config);
 
@@ -43,7 +45,7 @@ class CronJobProvider implements ProviderInterface
 
         $command = implode($parts, ' ');
 
-        return new self($minutes, $hours, $days, $months, $weekdays, $command);
+        return new self($minutes, $hours, $days, $months, $weekdays, $command, $ignoreInterval);
     }
 
     /**
@@ -51,6 +53,10 @@ class CronJobProvider implements ProviderInterface
      */
     public function getEvents(\DateTime $begin, \DateTime $end, array $options = array())
     {
+        if ($this->isIntervalTooShort()) {
+            return [];
+        }
+
         // Edge cases
         if ($this->isEveryMonths() && $this->isEveryDays() && $this->isEveryHours()) {
             return [
@@ -75,6 +81,46 @@ class CronJobProvider implements ProviderInterface
         }
 
         return $events;
+    }
+
+    /**
+     * isIntervalTooShort
+     *
+     * Check is the interval between 2 crons lunch is shorter than the given ignoreInterval
+     *
+     * @return boolean
+     */
+    public function isIntervalTooShort()
+    {
+        if (null === $this->ignoreInterval) {
+            return false;
+        }
+
+        $firstCron = null;
+        $secondCron = null;
+        foreach ($this->months as $month) {
+            foreach ($this->days as $day) {
+                foreach ($this->hours as $hour) {
+                    foreach ($this->minutes as $minute) {
+                        $date = new \DateTime();
+                        $date->setDate($date->format('Y'), $month, $day);
+                        $date->setTime($hour, $minute, 0);
+
+                        if (null === $firstCron) {
+                            $firstCron = $date;
+                        } elseif (null === $secondCron) {
+                            $secondCron = $date;
+
+                            break 4;
+                        }
+                    }
+                }
+            }
+        }
+
+        $firstCron->add($this->ignoreInterval);
+
+        return $firstCron > $secondCron;
     }
 
     /**
